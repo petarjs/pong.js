@@ -81,6 +81,7 @@ var PongGame = function(options){
 	var _onInit			= _opt.onInit 		|| null;
 	var _onPlay			= _opt.onPlay 		|| null;
 	var _onPause		= _opt.onPause 		|| null;
+	let _onScore		= _opt.onScore		|| null;
 	
 
 	// Min level = 1 - Max level = 5
@@ -116,8 +117,8 @@ var PongGame = function(options){
 			_background 			= '#000000';
 			_fieldData.background	= '#000000';
 			_fieldData.color		= '#FFFFFF';
-			_paddle.color			= '#FFFFFF';
-			_ball.color				= '#FFFFFF';
+			_paddleData.color			= '#FFFFFF';
+			_ballData.color				= '#FFFFFF';
 			break;
 		
 	}
@@ -465,6 +466,10 @@ var PongGame = function(options){
 
 		this.y_speed_start	= _level * _height / 200;
 		this.y_speed 		= this.y_speed_start;
+
+		this.events = {
+			onScore: _onScore
+		}
 	};
 	Ball.prototype.render = function(){
 		_context.beginPath();
@@ -505,9 +510,19 @@ var PongGame = function(options){
 
 		// SEGNATO UN PUNTO
 		if(this.y < _field.x || this.y > _field.x + _field.height){
-			this.y < _field.x ? _player.score++ : _computer.score++;
+			let playerWon = this.y < _field.x
+
+			playerWon ? _player.score++ : _computer.score++;
 			
 			_this.pauseGame();
+
+			if (this.events.onScore) {
+				this.events.onScore({
+					playerWon,
+					playerScore: _player.score,
+					computerScore: _computer.score
+				})
+			}
 			
 			this.reset();
 			playerPaddle.restart();
